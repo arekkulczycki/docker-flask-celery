@@ -1,6 +1,6 @@
 FROM python:3.9-slim
 WORKDIR /app
-COPY trains .
+COPY controller .
 COPY common ./common
 
 RUN pip install pdm
@@ -12,4 +12,4 @@ USER celery
 
 ENV CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672/
 ENV C_FORCE_ROOT=false
-ENV PYTHONPATH=src/trains
+ENV PYTHONPATH=src/controller

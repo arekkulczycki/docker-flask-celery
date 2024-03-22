@@ -65,6 +65,8 @@ class TrainTask(Task):
         """Store new periodic tasks for the beat scheduler to act upon."""
 
         for name, interval in ANNOUNCEMENT_TASK_CONFIGS:
-            settings.db_session.add(PeriodicTask(name=name, interval_seconds=interval, arg=arg))
+            settings.db_session.add(
+                PeriodicTask(name=name, interval_seconds=interval, arg=arg)
+            )
         settings.db_session.commit()
         settings.db_session.close()

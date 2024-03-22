@@ -30,8 +30,11 @@ def create_celery_app() -> Celery:
 def start_trains(celery_app: Celery) -> None:
     """Register a number of trains given in settings."""
 
-    for _ in range(settings.number_of_trains):
-        TrainTask.add_train(celery_app)
+    if not TrainTask.trains:
+        clean_tasks()
+
+        for _ in range(settings.number_of_trains):
+            TrainTask.add_train(celery_app)
 
 
 def clean_tasks() -> None:
@@ -42,14 +45,17 @@ def clean_tasks() -> None:
     settings.db_session.close()
 
 
-def is_beat() -> bool:
-    """Check if the current process is the celery beat process."""
+def is_worker() -> bool:
+    """
+    Check if the current process is a worker process, not the beat.
+    """
 
-    return "beat" in sys.argv
+    return "worker" in sys.argv
 
 
 app = create_celery_app()
 
-if not is_beat():
-    clean_tasks()
+if is_worker():
+    # FIXME: every periodic task is executed twice,
+    #  once by parent and once by child celery process
     start_trains(app)

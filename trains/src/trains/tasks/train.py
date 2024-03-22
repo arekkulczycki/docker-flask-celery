@@ -21,7 +21,7 @@ class Train:
     MAX_SPEED: float = 180.0
 
     def __init__(self, celery_app: Celery) -> None:
-        self.id: str = ''.join(choices(ascii_uppercase, k=self.ID_LENGTH))
+        self.id: str = "".join(choices(ascii_uppercase, k=self.ID_LENGTH))
         self.celery_app: Celery = celery_app
 
     def announce_speed(self) -> None:
@@ -63,6 +63,6 @@ class Train:
     def __del__(self) -> None:
         """Clean periodic tasks related to this train."""
 
-        settings.db_session.Query(PeriodicTask).filter(arg=self.id).delete()
+        settings.db_session.query(PeriodicTask).filter_by(arg=self.id).delete()
         settings.db_session.commit()
         settings.db_session.close()

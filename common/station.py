@@ -1,4 +1,6 @@
+from __future__ import annotations
 from enum import Enum
+from typing import Optional
 
 
 class Station(str, Enum):
@@ -22,3 +24,14 @@ class Station(str, Enum):
     SADKI = "Sadki"
     TANIECZNICA = "Taniecznica"
     UBLIK = "Ublik"
+
+    @property
+    def id(self) -> int:
+        return list(Station.__members__).index(self.name)
+
+    @classmethod
+    def get_by_id(cls, id_: int) -> Optional[Station]:
+        try:
+            return list(cls.__members__.items())[id_][1]
+        except IndexError:
+            return None

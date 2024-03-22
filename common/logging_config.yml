@@ -2,7 +2,7 @@ version: 1
 disable_existing_loggers: true
 formatters:
   simple:
-    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format: '%(asctime)s - %(levelname)s - %(module)s - %(message)s'
     datefmt: '%Y-%m-%d %H:%M:%S'
 handlers:
   console:
@@ -15,10 +15,37 @@ handlers:
     level: INFO
     formatter: simple
     filename: src/logs/app.log
+  fast:
+    class: logging.FileHandler
+    level: INFO
+    formatter: simple
+    filename: src/logs/fast.log
+  normal:
+    class: logging.FileHandler
+    level: INFO
+    formatter: simple
+    filename: src/logs/normal.log
+  slow:
+    class: logging.FileHandler
+    level: INFO
+    formatter: simple
+    filename: src/logs/slow.log
 loggers:
   app:
     level: INFO
     handlers: [console, file]
+    propagate: no
+  fast:
+    level: INFO
+    handlers: [fast]
+    propagate: no
+  normal:
+    level: INFO
+    handlers: [normal]
+    propagate: no
+  slow:
+    level: INFO
+    handlers: [slow]
     propagate: no
 root:
   level: INFO

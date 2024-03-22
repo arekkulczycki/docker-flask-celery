@@ -20,21 +20,27 @@ class SyncingScheduler(Scheduler):
 
         logger.debug("syncing scheduler...")
 
-        periodic_tasks: List[PeriodicTask] = cast(List[PeriodicTask], settings.db_session.query(PeriodicTask).all())
+        periodic_tasks: List[PeriodicTask] = cast(
+            List[PeriodicTask], settings.db_session.query(PeriodicTask).all()
+        )
 
         for task in periodic_tasks:
-            if task not in self.schedule:
+            if task not in cast(dict, self.schedule):
                 self._schedule_entry(task)
 
-                logger.info(
-                    f"scheduled new periodic task: {task.name} for {task.arg}"
-                )
+                logger.info(f"scheduled new periodic task: {task.name} for {task.arg}")
 
     def _schedule_entry(self, task: PeriodicTask) -> None:
-        """Change database periodical task into a beat scheduler entry. Run the new entry immediately."""
+        """
+        Change database periodical task into a beat scheduler entry.
+
+        Run the new entry immediately.
+        """
 
         entry = ScheduleEntry(
-            name=task.name, task=task.name, schedule=task.interval_seconds, args=(task.arg,),
+            name=task.name,
+            task=task.name,
+            schedule=task.interval_seconds,
+            args=(task.arg,),
         )
-        self.schedule[task] = entry
-        self.apply_entry(entry, producer=self.producer)
+        cast(dict, self.schedule)[task] = entry
