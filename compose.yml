@@ -1,0 +1,62 @@
+services:
+#  flask:
+#    container_name: gatekeeper
+#    build: .
+#    deploy:
+#      replicas: 2
+#      restart_policy:
+#        condition: on-failure
+#    ports:
+#      - "8000:5000"  # 5000 is the flask default port
+  rabbitmq:
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    build:
+      context: .
+      dockerfile: rabbitmq/Dockerfile
+  postgres:
+    ports:
+      - "5432:5432"
+    build:
+      context: .
+      dockerfile: postgres/Dockerfile
+  trains:
+    build:
+      context: .
+      dockerfile: trains/Dockerfile
+    command: .venv/bin/python -m celery -A src.trains.app worker -c 1 -f /dev/null -Q trains
+    links:
+      - rabbitmq
+      - postgres
+  trains-scheduler:
+    build:
+      context: .
+      dockerfile: trains/Dockerfile
+    command: .venv/bin/python -m celery -A src.trains.app beat -f /dev/null -S src.trains.tasks.syncing_scheduler:SyncingScheduler
+    links:
+      - rabbitmq
+      - postgres
+  controller:
+    build:
+      context: .
+      dockerfile: controller/Dockerfile
+    command: .venv/bin/python -m celery -A src.controller.app worker -c 1 -f /dev/null -Q controller
+    links:
+      - rabbitmq
+      - postgres
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+#  flower:
+#    image: mher/flower:2.0.0
+#    environment:
+#      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672/
+#    ports:
+#      - 5555:5555
+#    links:
+#      - rabbitmq
+#    deploy:
+#      restart_policy:
+#        condition: on-failure
