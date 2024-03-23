@@ -25,9 +25,9 @@ def get_gate_status(gate_id: int) -> Tuple[BaseModel, int]:
     gate: Optional[Gate] = Gate.get(gate_id)
 
     if gate is None:
-        return ErrorResponse(error="Not found"), 400
+        return ErrorResponse(error="Not found"), 404
 
-    logger.info(f"gate {gate_id} status: {gate.closed}")
+    logger.debug(f"gate {gate_id} status: {gate.closed}")
 
     return (
         GateStatusResponse(
@@ -54,7 +54,7 @@ def toggle_gate(
     Queried gate is locked until committed to avoid concurrent updates.
     """
 
-    logger.info(f"setting gate {gate_id} to {state}")
+    logger.info(f"setting gate {gate_id} to {'closed' if state else 'open'}")
     try:
         gate: Optional[Gate] = Gate.get_for_update(gate_id)
     except Exception as e:
@@ -67,7 +67,7 @@ def toggle_gate(
         gate.update(bool(state), form.train_id)
 
     if gate is None:
-        return ErrorResponse(error="Not found"), 400
+        return ErrorResponse(error="Not found"), 404
 
     return (
         GateStatusResponse(

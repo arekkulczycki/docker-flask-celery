@@ -1,3 +1,4 @@
+from sys import modules
 from typing import ClassVar, Optional
 
 from pydantic import AnyUrl, Field
@@ -44,4 +45,8 @@ class Settings(BaseSettings):
         return Settings._db_session
 
 
-settings = Settings()  # pyright: ignore
+settings = (
+    Settings()  # pyright: ignore
+    if "pytest" not in modules
+    else Settings.model_construct()
+)

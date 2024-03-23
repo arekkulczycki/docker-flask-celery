@@ -24,6 +24,14 @@ Different number of trains, as well as message intervals, can be set through
 - `SPEED_REPORT_INTERVAL_SECONDS`
 - `STATION_ARRIVAL_INTERVAL_SECONDS`
 
+##### Scaling
+
+We can increase the number of
+- gatekeepers by increasing the number of gunicorn workers
+- controllers by increasing the number of replicas of docker container
+
+Number of trains is sufficient to be set in the current single container. 
+
 ### Tests
 
 Run static tests:

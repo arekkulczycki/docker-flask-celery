@@ -2,7 +2,6 @@ from logging import getLogger
 from typing import Dict, ClassVar
 from typing import List
 
-from celery import Celery
 from celery import Task
 from sqlalchemy.exc import IntegrityError, PendingRollbackError
 
@@ -30,13 +29,13 @@ logger = getLogger("app")
 
 
 class TrainTask(Task):
-    """Celery tasks that holds references to all running trains."""
+    """Celery task that holds references to all running trains."""
 
     trains: ClassVar[Dict[str, Train]] = {}
 
     @classmethod
     def get_train(cls, id_: str) -> Train:
-        """Get train by its unique id."""
+        """Get train by its unique id or raise."""
 
         try:
             return cls.trains[id_]
@@ -45,10 +44,10 @@ class TrainTask(Task):
             raise
 
     @classmethod
-    def add_train(cls, celery_app: Celery) -> None:
+    def add_train(cls) -> None:
         """Add a train to the system and register its announcements."""
 
-        train = Train(celery_app)
+        train = Train()
         cls.trains[train.id] = train
 
         try:
@@ -58,7 +57,7 @@ class TrainTask(Task):
         except PendingRollbackError as e:
             logger.error(f"pending rollback error adding task: {e}")
 
-        logger.info(f"train {train.id} registered")
+        logger.debug(f"train {train.id} registered")
 
     @classmethod
     def _add_periodic_tasks(cls, arg: str) -> None:

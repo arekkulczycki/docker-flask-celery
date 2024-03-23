@@ -49,7 +49,7 @@ class TestRoutes:
         with patch("routes.Gate.get", return_value=None):
             response = client.get("/gate/123")
 
-        assert response.status_code == 400
+        assert response.status_code == 404
 
     @staticmethod
     @mark.parametrize("should_return_none", [True, False])
@@ -76,4 +76,4 @@ class TestRoutes:
                 f"/gate/{Station.MA.id}/1", data={"train_id": "DEFGHI"}
             )
 
-        assert response.status_code == 400
+        assert response.status_code == 404

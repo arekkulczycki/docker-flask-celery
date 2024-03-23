@@ -1,4 +1,4 @@
-from logging import getLogger, INFO
+from logging import getLogger
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
@@ -27,7 +27,7 @@ def create_app():
 
 def _redirect_logs_to_gunicorn():
     logger = getLogger("app")
-    gunicorn_logger = getLogger('gunicorn.error')
+    gunicorn_logger = getLogger("gunicorn.error")
     logger.handlers = gunicorn_logger.handlers
     logger.setLevel(gunicorn_logger.level)
 

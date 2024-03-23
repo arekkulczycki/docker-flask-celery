@@ -1,4 +1,5 @@
 import sys
+from time import sleep
 
 from celery import Celery
 from kombu import Exchange, Queue
@@ -27,14 +28,18 @@ def create_celery_app() -> Celery:
     return celery_app
 
 
-def start_trains(celery_app: Celery) -> None:
+def start_trains() -> None:
     """Register a number of trains given in settings."""
 
     if not TrainTask.trains:
         clean_tasks()
 
+        # sleep will block one worker for `speed_report_interval_seconds`,
+        #  but makes multi-train scenario more interesting
+        sleep_time = settings.number_of_trains / settings.speed_report_interval_seconds
         for _ in range(settings.number_of_trains):
-            TrainTask.add_train(celery_app)
+            TrainTask.add_train()
+            sleep(sleep_time)
 
 
 def clean_tasks() -> None:
@@ -58,4 +63,4 @@ app = create_celery_app()
 if is_worker():
     # FIXME: every periodic task is executed twice,
     #  once by parent and once by child celery process
-    start_trains(app)
+    start_trains()

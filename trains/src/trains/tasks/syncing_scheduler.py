@@ -1,5 +1,5 @@
 from logging import getLogger
-from typing import List, cast
+from typing import cast, Set
 
 from celery.beat import Scheduler, ScheduleEntry
 
@@ -12,21 +12,19 @@ logger = getLogger("app")
 class SyncingScheduler(Scheduler):
     """Periodically queries all current periodical tasks and updates beat schedule."""
 
-    max_interval = settings.scheduler_interval_seconds
-    sync_every = settings.scheduler_interval_seconds
+    _active_task_ids: Set[int] = set()
+    max_interval: int = settings.scheduler_interval_seconds
+    sync_every: int = settings.scheduler_interval_seconds
 
     def sync(self):
         """Synchronize beat schedule with database."""
 
         logger.debug("syncing scheduler...")
 
-        periodic_tasks: List[PeriodicTask] = cast(
-            List[PeriodicTask], settings.db_session.query(PeriodicTask).all()
-        )
-
-        for task in periodic_tasks:
-            if task not in cast(dict, self.schedule):
+        for task in settings.db_session.query(PeriodicTask).all():
+            if task.id not in self._active_task_ids:
                 self._schedule_entry(task)
+                self._active_task_ids.add(task.id)
 
                 logger.info(f"scheduled new periodic task: {task.name} for {task.arg}")
 
